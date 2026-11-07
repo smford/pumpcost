@@ -1,0 +1,27 @@
+name: Diagnose Fuel Finder API
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    name: Probe Fuel Finder API Across User Agents & CIDRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          cache: true
+
+      - name: Run Live Fuel Finder Diagnostic Probe
+        env:
+          RUN_LIVE_FUEL_FINDER_TEST: "1"
+          FUEL_FINDER_CLIENT_ID: ${{ secrets.FUEL_FINDER_CLIENT_ID }}
+          FUEL_FINDER_CLIENT_SECRET: ${{ secrets.FUEL_FINDER_CLIENT_SECRET }}
+          FUEL_FINDER_TOKEN_URL: ${{ secrets.FUEL_FINDER_TOKEN_URL || vars.FUEL_FINDER_TOKEN_URL }}
+        run: |
+          go test -v -run TestFuelFinderBlockDiagnosis ./internal/client

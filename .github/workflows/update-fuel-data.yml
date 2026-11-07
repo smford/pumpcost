@@ -30,6 +30,15 @@ jobs:
           go-version: '1.27'
           cache: true
 
+      - name: Run Fuel Finder Diagnostics (User-Agent vs CIDR)
+        env:
+          RUN_LIVE_FUEL_FINDER_TEST: "1"
+          FUEL_FINDER_CLIENT_ID: ${{ secrets.FUEL_FINDER_CLIENT_ID }}
+          FUEL_FINDER_CLIENT_SECRET: ${{ secrets.FUEL_FINDER_CLIENT_SECRET }}
+          FUEL_FINDER_TOKEN_URL: ${{ secrets.FUEL_FINDER_TOKEN_URL || vars.FUEL_FINDER_TOKEN_URL }}
+        run: |
+          go test -v -run TestFuelFinderBlockDiagnosis ./internal/client || true
+
       - name: Run Fuel Ingestion Pipeline
         env:
           FUEL_FINDER_CLIENT_ID: ${{ secrets.FUEL_FINDER_CLIENT_ID }}
