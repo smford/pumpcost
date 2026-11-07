@@ -46,7 +46,7 @@ func TestExtractOutcode(t *testing.T) {
 }
 
 func TestShardAndWrite(t *testing.T) {
-	tempDir, err := os.MkdirTemp("", "pumpcode-sharding-test-*")
+	tempDir, err := os.MkdirTemp("", "pumpcost-sharding-test-*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}

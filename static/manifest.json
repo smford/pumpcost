@@ -1,7 +1,7 @@
 {
-  "id": "/pumpcode/",
-  "name": "PumpCode - UK Fuel Price Tracker",
-  "short_name": "PumpCode",
+  "id": "./",
+  "name": "PumpCost - UK Fuel Price Tracker",
+  "short_name": "PumpCost",
   "description": "Real-time UK fuel price tracker for forecourts and filling stations. Find the cheapest Unleaded E10, Diesel B7, and Super E5 nearby.",
   "start_url": "./index.html",
   "scope": "./",

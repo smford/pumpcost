@@ -8,25 +8,25 @@ import (
 	"os"
 	"time"
 
-	"pumpcode/internal/client"
-	"pumpcode/internal/sharding"
+	"pumpcost/internal/client"
+	"pumpcost/internal/sharding"
 )
 
 func main() {
 	var (
-		outputDir        = flag.String("output", getEnv("PUMPCODE_OUTPUT_DIR", "data/outcodes"), "Output directory for sharded JSON files")
+		outputDir        = flag.String("output", getEnv("PUMPCOST_OUTPUT_DIR", getEnv("PUMPCODE_OUTPUT_DIR", "data/outcodes")), "Output directory for sharded JSON files")
 		tokenURL         = flag.String("token-url", getEnv("FUEL_FINDER_TOKEN_URL", "https://www.fuel-finder.service.gov.uk/api/v1/oauth/generate_access_token"), "OAuth2 token URL")
 		baseURL          = flag.String("base-url", getEnv("FUEL_FINDER_BASE_URL", "https://www.fuel-finder.service.gov.uk"), "Base URL of Fuel Finder API")
 		stationsEndpoint = flag.String("stations-endpoint", getEnv("FUEL_FINDER_STATIONS_ENDPOINT", "/api/v1/pfs"), "Endpoint path for stations and prices")
 		scope            = flag.String("scope", getEnv("FUEL_FINDER_SCOPE", "fuelfinder.read"), "OAuth2 scope")
-		mockMode         = flag.Bool("mock", getEnvBool("PUMPCODE_MOCK", false), "Force mock data generation mode")
+		mockMode         = flag.Bool("mock", getEnvBool("PUMPCOST_MOCK", getEnvBool("PUMPCODE_MOCK", false)), "Force mock data generation mode")
 		timeoutSec       = flag.Int("timeout", 40, "Timeout in seconds for entire data pipeline")
 		serveAddr        = flag.String("serve", "", "Start local HTTP development server on given address (e.g. :8080)")
 	)
 	flag.Parse()
 
 	startTime := time.Now()
-	log.Printf("[PumpCode Pipeline] Starting ingestion and sharding...")
+	log.Printf("[PumpCost Pipeline] Starting ingestion and sharding...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*timeoutSec)*time.Second)
 	defer cancel()
@@ -38,13 +38,13 @@ func main() {
 	var err error
 
 	if *mockMode {
-		log.Println("[PumpCode Pipeline] Running in mock generation mode.")
+		log.Println("[PumpCost Pipeline] Running in mock generation mode.")
 		stations = client.GenerateMockStations()
 	} else if clientID == "" && clientSecret == "" {
-		log.Println("[PumpCode Pipeline] Note: FUEL_FINDER_CLIENT_ID and FUEL_FINDER_CLIENT_SECRET not set. Ingesting live open data feeds.")
+		log.Println("[PumpCost Pipeline] Note: FUEL_FINDER_CLIENT_ID and FUEL_FINDER_CLIENT_SECRET not set. Ingesting live open data feeds.")
 		stations = client.FetchOpenDataFeeds(ctx, nil)
 	} else {
-		log.Printf("[PumpCode Pipeline] Connecting to Fuel Finder API (%s)...", *baseURL)
+		log.Printf("[PumpCost Pipeline] Connecting to Fuel Finder API (%s)...", *baseURL)
 		c := client.NewClient(client.Config{
 			ClientID:         clientID,
 			ClientSecret:     clientSecret,
@@ -58,12 +58,12 @@ func main() {
 
 		stations, err = c.FetchStations(ctx)
 		if err != nil {
-			log.Printf("[PumpCode Pipeline] WARNING: Upstream API request failed (%v). Ingesting public open data feeds to ensure complete UK coverage.", err)
+			log.Printf("[PumpCost Pipeline] WARNING: Upstream API request failed (%v). Ingesting public open data feeds to ensure complete UK coverage.", err)
 			stations = client.FetchOpenDataFeeds(ctx, nil)
 		}
 	}
 
-	log.Printf("[PumpCode Pipeline] Ingested %d forecourt records.", len(stations))
+	log.Printf("[PumpCost Pipeline] Ingested %d forecourt records.", len(stations))
 
 	index, err := sharding.ShardAndWrite(stations, sharding.ShardOptions{
 		OutputDir:   *outputDir,
@@ -71,11 +71,11 @@ func main() {
 		Concurrency: 16,
 	})
 	if err != nil {
-		log.Fatalf("[PumpCode Pipeline] ERROR sharding and writing datasets: %v", err)
+		log.Fatalf("[PumpCost Pipeline] ERROR sharding and writing datasets: %v", err)
 	}
 
 	elapsed := time.Since(startTime)
-	log.Printf("[PumpCode Pipeline] SUCCESS: Generated %d outcodes (%d stations) in %s to %s",
+	log.Printf("[PumpCost Pipeline] SUCCESS: Generated %d outcodes (%d stations) in %s to %s",
 		index.TotalOutcodes, index.TotalStations, elapsed.Round(time.Millisecond), *outputDir)
 
 	if *serveAddr != "" {
@@ -87,9 +87,9 @@ func main() {
 		if addr[0] != ':' {
 			addr = ":" + addr
 		}
-		log.Printf("[PumpCode Server] Serving PumpCode at http://localhost%s (press Ctrl+C to stop)...", addr)
+		log.Printf("[PumpCost Server] Serving PumpCost at http://localhost%s (press Ctrl+C to stop)...", addr)
 		if err := http.ListenAndServe(addr, mux); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("[PumpCode Server] Server error: %v", err)
+			log.Fatalf("[PumpCost Server] Server error: %v", err)
 		}
 	}
 }

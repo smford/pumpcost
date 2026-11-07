@@ -134,7 +134,7 @@ func TestFuelFinderBlockDiagnosis(t *testing.T) {
 		},
 		{
 			Name:  "Custom-App",
-			Value: "PumpCode-FuelTracker/1.0 (+https://stephenford.org/pumpcode)",
+			Value: "PumpCost-FuelTracker/1.0 (+https://stephenford.org/pumpcost)",
 		},
 	}
 

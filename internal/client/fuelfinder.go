@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"pumpcode/internal/sharding"
+	"pumpcost/internal/sharding"
 )
 
 // Config holds configuration parameters for the UK Fuel Finder API client.
@@ -267,7 +267,7 @@ func FetchOpenDataFeeds(ctx context.Context, httpClient *http.Client) []sharding
 		if err != nil {
 			continue
 		}
-		req.Header.Set("User-Agent", "Mozilla/5.0 (PumpCode Fuel Tracker; OpenData Ingester)")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (PumpCost Fuel Tracker; OpenData Ingester)")
 		req.Header.Set("Accept", "application/json")
 
 		resp, err := httpClient.Do(req)
@@ -503,7 +503,7 @@ func (c *Client) executeWithRetry(ctx context.Context, reqFunc func() (*http.Res
 			}
 			cfID := resp.Header.Get("X-Amz-Cf-Id")
 			serverHdr := resp.Header.Get("Server")
-			log.Printf("[PumpCode Diagnostics] HTTP %d from %s (Server: %s, CloudFront ID: %s): %s",
+			log.Printf("[PumpCost Diagnostics] HTTP %d from %s (Server: %s, CloudFront ID: %s): %s",
 				resp.StatusCode, reqURL, serverHdr, cfID, string(body))
 			return fmt.Errorf("http request to %s failed with status %d: %s", reqURL, resp.StatusCode, string(body))
 		}

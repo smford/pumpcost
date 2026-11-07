@@ -1,10 +1,10 @@
-# PumpCode
+# PumpCost
 
-PumpCode is an automated, zero-cost fuel price tracker for filling stations across the United Kingdom. It downloads forecourt pricing data from the UK Fuel Finder Scheme, splits the records into lightweight regional JSON files by UK postcode district, and publishes an interactive web interface directly to GitHub Pages.
+PumpCost is an automated, zero-cost fuel price tracker for filling stations across the United Kingdom. It downloads forecourt pricing data from the UK Fuel Finder Scheme, splits the records into lightweight regional JSON files by UK postcode district, and publishes an interactive web interface directly to GitHub Pages.
 
 ## Prerequisites
 
-Before setting up or running PumpCode, ensure you have the following installed on your computer:
+Before setting up or running PumpCost, ensure you have the following installed on your computer:
 
 - Go (version 1.22 or higher)
 - Git
@@ -14,18 +14,18 @@ Before setting up or running PumpCode, ensure you have the following installed o
 
 ## How to Register for API Credentials
 
-PumpCode queries official UK forecourt prices using the UK Fuel Finder Scheme API operated by the Department for Energy Security and Net Zero and the Competition and Markets Authority.
+PumpCost queries official UK forecourt prices using the UK Fuel Finder Scheme API operated by the Department for Energy Security and Net Zero and the Competition and Markets Authority.
 
 Follow these steps to obtain API credentials:
 
 1. Visit the official UK Fuel Finder developer portal at https://www.developer.fuel-finder.service.gov.uk/
 2. Register for a developer account using your email address and verify your account.
 3. Sign in and navigate to the Applications or API Keys section in the developer dashboard.
-4. Click Create New Application and enter a title for your project (such as "PumpCode Tracker").
+4. Click Create New Application and enter a title for your project (such as "PumpCost Tracker").
 5. Select OAuth 2.0 Client Credentials as the authentication type.
 6. Copy your generated Client ID and Client Secret. Store these values securely. You will use them as environment variables.
 
-If you want to run the project without registering first, PumpCode includes a built-in sample data generator so you can test the pipeline and user interface immediately.
+If you want to run the project without registering first, PumpCost includes a built-in sample data generator so you can test the pipeline and user interface immediately.
 
 ## How to Test and Run the Project Locally
 
@@ -34,8 +34,8 @@ You can test and run both the data processing pipeline and the web frontend on y
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/smford/pumpcode.git
-cd pumpcode
+git clone https://github.com/smford/pumpcost.git
+cd pumpcost
 ```
 
 ### Step 2: Run automated tests
@@ -88,16 +88,16 @@ The page will load, detect your nearest postcode district via browser geolocatio
 
 ## How to Deploy to GitHub Pages
 
-PumpCode is designed to run entirely on free GitHub infrastructure without requiring servers or paid database instances.
+PumpCost is designed to run entirely on free GitHub infrastructure without requiring servers or paid database instances.
 
 Follow these steps to deploy:
 
 ### Step 1: Push your code to GitHub
 
-Create a new repository on GitHub named `pumpcode` and push your code to the `main` branch:
+Create a new repository on GitHub named `pumpcost` and push your code to the `main` branch:
 
 ```bash
-git remote add origin https://github.com/smford/pumpcode.git
+git remote add origin https://github.com/smford/pumpcost.git
 git branch -M main
 git push -u origin main
 ```

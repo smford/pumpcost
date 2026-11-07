@@ -1,5 +1,5 @@
 /**
- * PumpCode - Tactical Car-Safe Client-Side Fuel Price Tracker
+ * PumpCost - Tactical Car-Safe Client-Side Fuel Price Tracker
  * Pure Vanilla ES6+ JavaScript (Zero dependencies, zero build step)
  */
 
@@ -84,13 +84,13 @@
     // Register Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=14')
+        navigator.serviceWorker.register('./sw.js?v=15')
           .then((registration) => {
             registration.update();
-            console.log('PumpCode PWA Service Worker registered:', registration.scope);
+            console.log('PumpCost PWA Service Worker registered:', registration.scope);
           })
           .catch((error) => {
-            console.warn('PumpCode Service Worker registration failed:', error);
+            console.warn('PumpCost Service Worker registration failed:', error);
           });
       });
     }
@@ -118,7 +118,7 @@
     window.addEventListener('appinstalled', () => {
       deferredPrompt = null;
       syncButtons();
-      console.log('PumpCode PWA installed successfully.');
+      console.log('PumpCost PWA installed successfully.');
     });
 
     if (refreshBtn) {
@@ -153,9 +153,16 @@
   }
 
   // --- Theme Management ---
+  const THEME_STORAGE_KEY = 'pumpcost-theme';
+  const LEGACY_THEME_STORAGE_KEY = 'pumpcode-theme';
+
+  function getStoredTheme() {
+    return localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+  }
+
   function setupThemeToggle() {
     function getEffectiveTheme() {
-      const saved = localStorage.getItem('pumpcode-theme');
+      const saved = getStoredTheme();
       if (saved === 'dark' || saved === 'light') return saved;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
@@ -176,7 +183,7 @@
     }
 
     function updateThemeUI() {
-      const saved = localStorage.getItem('pumpcode-theme');
+      const saved = getStoredTheme();
       const effective = getEffectiveTheme();
       const modeDesc = saved ? (saved === 'dark' ? 'Dark' : 'Light') : `Auto (${effective === 'dark' ? 'Dark' : 'Light'})`;
       themeToggle.setAttribute('title', `Theme: ${modeDesc} (Click to switch)`);
@@ -191,27 +198,28 @@
     }
 
     themeToggle.addEventListener('click', () => {
-      const saved = localStorage.getItem('pumpcode-theme');
+      const saved = getStoredTheme();
       const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
       // Cycle: Auto (matches device) -> Light -> Dark -> Auto
       if (!saved) {
         const next = isSystemDark ? 'light' : 'dark';
-        localStorage.setItem('pumpcode-theme', next);
+        localStorage.setItem(THEME_STORAGE_KEY, next);
         applyTheme(next);
       } else if (saved === 'light') {
-        localStorage.setItem('pumpcode-theme', 'dark');
+        localStorage.setItem(THEME_STORAGE_KEY, 'dark');
         applyTheme('dark');
       } else {
         // Reset to system auto
-        localStorage.removeItem('pumpcode-theme');
+        localStorage.removeItem(THEME_STORAGE_KEY);
+        localStorage.removeItem(LEGACY_THEME_STORAGE_KEY);
         applyTheme(null);
       }
     });
 
     // Automatically adjust in real time whenever user changes their device system setting
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      if (!localStorage.getItem('pumpcode-theme')) {
+      if (!getStoredTheme()) {
         applyTheme(null);
       } else {
         updateThemeUI();
@@ -951,11 +959,12 @@
   // ==========================================================================
   // Important Postcodes Feature (Persistent 1-Tap Search)
   // ==========================================================================
-  const IMPORTANT_POSTCODES_KEY = 'pumpcode-important-postcodes';
+  const IMPORTANT_POSTCODES_KEY = 'pumpcost-important-postcodes';
+  const LEGACY_IMPORTANT_POSTCODES_KEY = 'pumpcode-important-postcodes';
 
   function getImportantPostcodes() {
     try {
-      const raw = localStorage.getItem(IMPORTANT_POSTCODES_KEY);
+      const raw = localStorage.getItem(IMPORTANT_POSTCODES_KEY) || localStorage.getItem(LEGACY_IMPORTANT_POSTCODES_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
