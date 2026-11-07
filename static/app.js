@@ -16,6 +16,12 @@
     stations: []
   };
 
+  // Storage Keys (Declared at top level to prevent temporal dead zone ReferenceErrors)
+  const THEME_STORAGE_KEY = 'pumpcost-theme';
+  const LEGACY_THEME_STORAGE_KEY = 'pumpcode-theme';
+  const IMPORTANT_POSTCODES_KEY = 'pumpcost-important-postcodes';
+  const LEGACY_IMPORTANT_POSTCODES_KEY = 'pumpcode-important-postcodes';
+
   // DOM Elements
   const searchForm = document.getElementById('search-form');
   const searchInput = document.getElementById('outcode-search');
@@ -32,31 +38,52 @@
   const stationsGrid = document.getElementById('stations-grid');
   const gradeRadios = document.querySelectorAll('input[name="fuel-grade"]');
 
-  // Initialize
-  init();
-
   async function init() {
-    setupPWA();
-    setupThemeToggle();
-    setupGradeSelector();
-    setupSearch();
-    setupGeolocation();
-    setupImportantPostcodes();
+    try {
+      setupPWA();
+      setupThemeToggle();
+      setupGradeSelector();
+      setupSearch();
+      setupGeolocation();
+      setupImportantPostcodes();
 
-    // Load master index
-    await loadIndex();
+      // Load master index
+      await loadIndex();
 
-    // Attempt geolocation on initial page load
-    requestGeolocation();
+      // Check if user has saved important postcodes for instant 1-tap display
+      const savedList = getImportantPostcodes();
+      if (savedList && savedList.length > 0) {
+        await performSearch(savedList[0].postcode);
+      } else {
+        // Attempt geolocation with fast initial outcode fallback
+        requestGeolocation(false);
+      }
+    } catch (err) {
+      console.error('PumpCost initialization error:', err);
+      showStatus('Unable to initialize fuel tracker. Please refresh.', 'alert-danger');
+    }
   }
 
   // --- Progressive Web App (PWA) Setup ---
   function isAppInstalled() {
-    return (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true ||
-      document.referrer.startsWith('android-app://')
-    );
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+          return true;
+        }
+        if (window.navigator && window.navigator.standalone === true) {
+          return true;
+        }
+      }
+      if (typeof document !== 'undefined' && typeof document.referrer === 'string') {
+        if (document.referrer.startsWith('android-app://')) {
+          return true;
+        }
+      }
+    } catch (_) {
+      // Detection fallback
+    }
+    return false;
   }
 
   function setupPWA() {
@@ -84,7 +111,7 @@
     // Register Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=15')
+        navigator.serviceWorker.register('./sw.js?v=16')
           .then((registration) => {
             registration.update();
             console.log('PumpCost PWA Service Worker registered:', registration.scope);
@@ -153,9 +180,6 @@
   }
 
   // --- Theme Management ---
-  const THEME_STORAGE_KEY = 'pumpcost-theme';
-  const LEGACY_THEME_STORAGE_KEY = 'pumpcode-theme';
-
   function getStoredTheme() {
     return localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
   }
@@ -274,7 +298,14 @@
       return;
     }
 
-    showStatus('Locking onto GPS coordinates...', 'alert-info');
+    if (manualTrigger) {
+      showStatus('Locking onto GPS coordinates...', 'alert-info');
+    } else {
+      // Fast initial display: load default outcode immediately so user never sees a blank screen
+      if (!state.currentOutcode) {
+        fallbackToFirstOutcode();
+      }
+    }
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -284,13 +315,13 @@
       },
       (err) => {
         console.warn('Geolocation error:', err.message);
-        clearStatus();
         if (manualTrigger) {
+          clearStatus();
           showStatus('Location permission denied. Please enter an outcode or postcode.', 'alert-warning');
         }
         fallbackToFirstOutcode();
       },
-      { timeout: 8000, maximumAge: 300000 }
+      { timeout: 6000, maximumAge: 300000 }
     );
   }
 
@@ -959,9 +990,6 @@
   // ==========================================================================
   // Important Postcodes Feature (Persistent 1-Tap Search)
   // ==========================================================================
-  const IMPORTANT_POSTCODES_KEY = 'pumpcost-important-postcodes';
-  const LEGACY_IMPORTANT_POSTCODES_KEY = 'pumpcode-important-postcodes';
-
   function getImportantPostcodes() {
     try {
       const raw = localStorage.getItem(IMPORTANT_POSTCODES_KEY) || localStorage.getItem(LEGACY_IMPORTANT_POSTCODES_KEY);
@@ -1170,4 +1198,7 @@
       if (star) star.setAttribute('fill', 'none');
     }
   }
+
+  // Initialize once all declarations and handlers are loaded
+  init();
 })();

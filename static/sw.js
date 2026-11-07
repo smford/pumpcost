@@ -1,5 +1,5 @@
 // Service Worker for PumpCost PWA
-const CACHE_NAME = 'pumpcost-v6';
+const CACHE_NAME = 'pumpcost-v7';
 const STATIC_ASSETS = [
   './',
   './index.html',
